@@ -1,3 +1,4 @@
+# frontend.py
 import streamlit as st
 import requests
 
@@ -56,15 +57,15 @@ def update_fields_section():
 # Main Streamlit UI
 def main():
     st.sidebar.title("Navigation")
-    nav_item = st.sidebar.radio("", ["View All Details", "Add Data", "Delete Section", "Update Fields"])
+    nav_item = st.sidebar.radio("", ["View All Products", "Add Product", "Delete Product", "Update Product"])
 
-    if nav_item == "View All Details":
+    if nav_item == "View All Products":
         view_all_details()
-    elif nav_item == "Add Data":
+    elif nav_item == "Add Product":
         add_data()
-    elif nav_item == "Delete Section":
+    elif nav_item == "Delete Product":
         delete_section()
-    elif nav_item == "Update Fields":
+    elif nav_item == "Update Product":
         update_fields_section()
 
 if __name__ == "__main__":
