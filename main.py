@@ -1,102 +1,72 @@
+# frontend.py
 import streamlit as st
 import requests
-import json
 
+BASE_URL = 'http://127.0.0.1:5000'
 
-# Function to get all products
-def get_products():
-    response = requests.get("http://127.0.0.1:5000/products")
+# Streamlit UI
+def view_all_details():
+    st.title("All Products Details")
+    response = requests.get(BASE_URL + "/products")
     if response.status_code == 200:
         products = response.json()
-        return products
+        for product in products:
+            st.write(product)
     else:
-        return []
+        st.error("Failed to fetch products")
 
-
-# Function to get product details by ID
-def get_product_details(product_id):
-    response = requests.get(f"http://127.0.0.1:5000/products/{product_id}")
-    if response.status_code == 200:
-        product_details = response.json()
-        return product_details
-    else:
-        return None
-
-
-# Function to add a product
-def add_product(product_data):
-    response = requests.post("http://127.0.0.1:5000/products", json=product_data)
-    return response.json()
-
-
-# Function to update a product
-def update_product(product_id, product_data):
-    response = requests.put(f"http://127.0.0.1:5000/products/{product_id}", json=product_data)
-    return response.json()
-
-
-# Function to add a variant
-def add_variant(product_id, variant_data):
-    response = requests.post(f"http://127.0.0.1:5000/products/{product_id}/variants", json=variant_data)
-    return response.json()
-
-
-# Function to update a variant
-def update_variant(product_id, variant_id, variant_data):
-    response = requests.put(f"http://127.0.0.1:5000/products/{product_id}/variants/{variant_id}", json=variant_data)
-    return response.json()
-
-
-# Function to delete a product
-def delete_product(product_id):
-    response = requests.delete(f"http://127.0.0.1:5000/products/{product_id}")
-    return response.json()
-
-
-# Main function
-def main():
-    st.title("Product Management System")
-
-    menu_selection = st.sidebar.radio("Select:", ["View Products", "Add Product", "Delete Product"])
-
-    if menu_selection == "View Products":
-        st.header("View Products")
-        products = get_products()
-        if products:
-            product_names = [product["name"] for product in products]
-            selected_product_name = st.selectbox("Select a product:", product_names)
-            selected_product = next((product for product in products if product["name"] == selected_product_name), None)
-            if selected_product:
-                st.write("### Product Details:")
-                st.write(selected_product)
+def add_data():
+    st.title("Add New Product")
+    product_data = st.text_area("Enter product data in JSON format")
+    if st.button("Add"):
+        try:
+            product = eval(product_data)
+            response = requests.post(BASE_URL + "/products", json=product)
+            if response.status_code == 200:
+                st.success("Product added successfully")
             else:
-                st.write("Product not found.")
+                st.success("Product added successfully")
+        except Exception as e:
+            st.error("Invalid JSON format")
+
+def delete_section():
+    st.title("Delete Product")
+    product_id = st.text_input("Enter Product ID")
+    if st.button("Delete"):
+        response = requests.delete(BASE_URL + f"/products/{product_id}")
+        if response.status_code == 200:
+            st.success("Product deleted successfully")
         else:
-            st.write("No products found.")
+            st.error("Failed to delete product")
 
-    elif menu_selection == "Add Product":
-        st.header("Add Product")
-        st.subheader("Enter Product JSON:")
-        product_json = st.text_area("Product JSON")
+def update_fields_section():
+    st.title("Update Product")
+    product_id = st.text_input("Enter Product ID")
+    updated_product_data = st.text_area("Enter updated product data in JSON format")
+    if st.button("Update"):
+        try:
+            updated_product = eval(updated_product_data)
+            response = requests.put(BASE_URL + f"/products/{product_id}", json=updated_product)
+            if response.status_code == 200:
+                st.success("Product updated successfully")
+            else:
+                st.error("Failed to update product")
+        except Exception as e:
+            st.error("Invalid JSON format")
 
-        if st.button("Add"):
-            try:
-                new_product = json.loads(product_json)
-                response = add_product(new_product)
-                st.write(response)
-            except json.JSONDecodeError as e:
-                st.error("Invalid JSON format. Please enter valid JSON data.")
-        else:
-            print("nONE")
+# Main Streamlit UI
+def main():
+    st.sidebar.title("Navigation")
+    nav_item = st.sidebar.radio("", ["View All Products", "Add Product", "Delete Product", "Update Product"])
 
-    elif menu_selection == "Delete Product":
-        st.header("Delete Product")
-        product_id = st.text_input("Product ID")
-
-        if st.button("Delete"):
-            response = delete_product(product_id)
-            st.write(response)
-
+    if nav_item == "View All Products":
+        view_all_details()
+    elif nav_item == "Add Product":
+        add_data()
+    elif nav_item == "Delete Product":
+        delete_section()
+    elif nav_item == "Update Product":
+        update_fields_section()
 
 if __name__ == "__main__":
     main()
